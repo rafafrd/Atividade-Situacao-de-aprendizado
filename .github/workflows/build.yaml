@@ -14,11 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: "https://sonarcloud.io"
         with:
           args: >
             -Dsonar.branch.name=dev
+            -Dsonar.projectKey=rafafrd_Atividade-Situacao-de-aprendizado
+            -Dsonar.organization=rafael-barros
+            -Dsonar.sources=.
