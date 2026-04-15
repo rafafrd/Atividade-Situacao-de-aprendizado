@@ -26,4 +26,3 @@ jobs:
             -Dsonar.branch.name=dev
             -Dsonar.projectKey=rafafrd_Atividade-Situacao-de-aprendizado
             -Dsonar.organization=rafael-barros
-            -Dsonar.sources=.
