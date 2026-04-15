@@ -4,5 +4,5 @@ export enum EnvKey {
     DB_HOST = 'DB_HOST',
     DB_DATABASE = 'DB_DATABASE',
     DB_USER = 'DB_USER',
-    DB_PASS = 'DB_PASS'
+    DB_PASS = 'DB_PASSWORD'
 }
