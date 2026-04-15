@@ -1,34 +1,34 @@
 import { db } from "../database/connection.database";
-import { Categoria } from "../models/categoria.model";
+import { Fornecedores } from "../models/fornecedores.model";
 import { ResultSetHeader } from "mysql2";
 
-export class CategoriaRepository {
+export class FornecedoresRepository {
     async selectTodos(): Promise<ResultSetHeader> {
-        const sql = 'SELECT * FROM categorias';
+        const sql = 'SELECT * FROM fornecedores';
         const [rows] = await db.execute<ResultSetHeader>(sql);
         return rows;
     }
     async selectById(id: number): Promise<ResultSetHeader> {
-        const sql = 'SELECT * FROM categorias WHERE id_categoria = ?';
+        const sql = 'SELECT * FROM fornecedores WHERE id_fornecedor = ?';
         const values = [id];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows;
     }
-    async adicionarCategoria(dados: Categoria): Promise<ResultSetHeader> {
-        const sql = 'INSERT INTO categorias (dc_categoria) VALUES (?);';
-        const values = [dados.DescricaoCategoria];
+    async adicionarFornecedor(dados: Fornecedores): Promise<ResultSetHeader> {
+        const sql = 'INSERT INTO fornecedores (dc_fornecedores) VALUES (?);';
+        const values = [dados.DescricaoFornecedor];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows;
     }
 
-    async editarCategoria(id: number, dados: Categoria): Promise<ResultSetHeader> {
+    async editarFornecedor(id: number, dados: Fornecedores): Promise<ResultSetHeader> {
         const sql = 'UPDATE categorias SET dc_categoria = ? WHERE id_categoria = ?;';
-        const values = [dados.DescricaoCategoria, id]
+        const values = [dados.DescricaoFornecedor, id]
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows
     }
 
-    async deletarCategoria(id: number): Promise<ResultSetHeader> {
+    async deletarFornecedor(id: number): Promise<ResultSetHeader> {
         const sql = 'DELETE FROM categorias WHERE id_categoria = ?';
         const values = [id];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
