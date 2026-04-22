@@ -1,34 +1,48 @@
 export class Produto {
-    private readonly _id?: number;
-    private _nmProduto: string = '';
+    private readonly _idProduto?: number;
+    private _dcProduto: string = '';
+    private _vinculoImagem: string = '';
     private _preco: number = 0;
+    private _estoqueMinimo: number = 0;
     private _idCategoria: number = 0;
     private _idFornecedor: number = 0;
 
     constructor(
-        nmProduto: string,
+        dcProduto: string,
+        vinculoImagem: string,
         preco: number,
+        estoqueMinimo: number,
         idCategoria: number,
         idFornecedor: number,
-        id?: number
+        idProduto?: number
     ) {
-        this.NmProduto = nmProduto;
+        this.DescricaoProduto = dcProduto;
+        this.VinculoImagem = vinculoImagem;
         this.Preco = preco;
+        this.EstoqueMinimo = estoqueMinimo;
         this.IdCategoria = idCategoria;
         this.IdFornecedor = idFornecedor;
-        this._id = id;
+        this._idProduto = idProduto;
     }
 
-    public get Id(): number | undefined {
-        return this._id;
+    public get IdProduto(): number | undefined {
+        return this._idProduto;
     }
 
-    public get NmProduto(): string {
-        return this._nmProduto;
+    public get DescricaoProduto(): string {
+        return this._dcProduto;
+    }
+
+    public get VinculoImagem(): string {
+        return this._vinculoImagem;
     }
 
     public get Preco(): number {
         return this._preco;
+    }
+
+    public get EstoqueMinimo(): number {
+        return this._estoqueMinimo;
     }
 
     public get IdCategoria(): number {
@@ -39,14 +53,24 @@ export class Produto {
         return this._idFornecedor;
     }
 
-    public set NmProduto(value: string) {
-        this._validarNmProduto(value);
-        this._nmProduto = value;
+    public set DescricaoProduto(value: string) {
+        this._validarDcProduto(value);
+        this._dcProduto = value;
+    }
+
+    public set VinculoImagem(value: string) {
+        this._validarVinculoImagem(value);
+        this._vinculoImagem = value;
     }
 
     public set Preco(value: number) {
         this._validarPreco(value);
         this._preco = value;
+    }
+
+    public set EstoqueMinimo(value: number) {
+        this._validarEstoqueMinimo(value);
+        this._estoqueMinimo = value;
     }
 
     public set IdCategoria(value: number) {
@@ -59,20 +83,41 @@ export class Produto {
         this._idFornecedor = value;
     }
 
-    public static adicionar(nmProduto: string, preco: number, idCategoria: number, idFornecedor: number): Produto {
-        return new Produto(nmProduto, preco, idCategoria, idFornecedor);
+    public static adicionar(
+        dcProduto: string,
+        vinculoImagem: string,
+        preco: number,
+        estoqueMinimo: number,
+        idCategoria: number,
+        idFornecedor: number
+    ): Produto {
+        return new Produto(dcProduto, vinculoImagem, preco, estoqueMinimo, idCategoria, idFornecedor);
     }
 
-    public static editar(nmProduto: string, preco: number, idCategoria: number, idFornecedor: number, id: number): Produto {
-        return new Produto(nmProduto, preco, idCategoria, idFornecedor, id);
+    public static editar(
+        dcProduto: string,
+        vinculoImagem: string,
+        preco: number,
+        estoqueMinimo: number,
+        idCategoria: number,
+        idFornecedor: number,
+        idProduto: number
+    ): Produto {
+        return new Produto(dcProduto, vinculoImagem, preco, estoqueMinimo, idCategoria, idFornecedor, idProduto);
     }
 
-    private _validarNmProduto(value: string): void {
+    private _validarDcProduto(value: string): void {
         if (typeof value !== 'string') {
-            throw new TypeError('O nome do produto deve ser um texto(string).');
+            throw new TypeError('A descrição do produto deve ser um texto(string).');
         }
         if (!value || value.trim().length <= 3) {
-            throw new TypeError('O nome do produto deve ter pelo menos 3 caracteres.');
+            throw new TypeError('A descrição do produto deve ter pelo menos 3 caracteres.');
+        }
+    }
+
+    private _validarVinculoImagem(value: string): void {
+        if (typeof value !== 'string') {
+            throw new TypeError('O vínculo de imagem deve ser um texto(string).');
         }
     }
 
@@ -82,6 +127,15 @@ export class Produto {
         }
         if (value < 0) {
             throw new TypeError('O preço do produto não pode ser negativo.');
+        }
+    }
+
+    private _validarEstoqueMinimo(value: number): void {
+        if (typeof value !== 'number') {
+            throw new TypeError('O estoque mínimo deve ser um número.');
+        }
+        if (value < 0) {
+            throw new TypeError('O estoque mínimo não pode ser negativo.');
         }
     }
 
