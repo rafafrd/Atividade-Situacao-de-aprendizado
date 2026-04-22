@@ -8,7 +8,7 @@ export class FornecedoresController {
         try {
             const fornecedores = await this._service.selecionarTodos();
             res.status(200).json({
-                mensagem: 'Fornecedores listadas com sucesso.',
+                mensagem: 'Fornecedores listados com sucesso.',
                 recurso: fornecedores,
             });
         } catch (error) {
@@ -31,7 +31,7 @@ export class FornecedoresController {
 
             const fornecedor = await this._service.selecionarPorId(idFornecedor);
             res.status(200).json({
-                mensagem: 'Categoria encontrada com sucesso.',
+                mensagem: 'Fornecedor encontrado com sucesso.',
                 recurso: fornecedor,
             });
         } catch (error) {
@@ -76,7 +76,7 @@ export class FornecedoresController {
             }
 
             await this._service.deletarFornecedor(idFornecedor);
-            res.status(200).json({ mensagem: 'Fornecedor deletada com sucesso.' });
+            res.status(200).json({ mensagem: 'Fornecedor deletado com sucesso.' });
         } catch (error) {
             console.log(error)
             res.status(500).json({ mensagem: 'Erro interno do servidor.', error: error instanceof Error ? error.message : 'Erro desconhecido' });
