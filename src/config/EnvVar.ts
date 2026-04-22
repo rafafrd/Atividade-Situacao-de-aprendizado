@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { EnvKey } from './enum/EnvKeys.js'
+import { EnvKey } from './enum/EnvKeys'
 
 export class EnvVar {
     private constructor() { }
