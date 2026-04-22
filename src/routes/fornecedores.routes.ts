@@ -15,6 +15,6 @@ fornecedoresRouter.post("/", fornecedoresController.criarFornecedor);
 fornecedoresRouter.put("/:id", fornecedoresController.atualizarFornecedor);
 
 //delete
-fornecedoresRouter.delete("/:id ", fornecedoresController.deletarFornecedor);
+fornecedoresRouter.delete("/:id", fornecedoresController.deletarFornecedor);
 
 export default fornecedoresRouter;
