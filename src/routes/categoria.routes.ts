@@ -11,39 +11,3 @@ categoriaRouter.put('/:id', categoriaController.atualizarCategoria);
 categoriaRouter.delete('/:id', categoriaController.deletarCategoria);
 
 export default categoriaRouter;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
