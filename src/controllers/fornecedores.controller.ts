@@ -21,7 +21,7 @@ export class FornecedoresController {
         try {
             const idFornecedor = Number(req.params.id);
 
-            if (isNaN(idFornecedor) || idFornecedor <= 0) {
+            if (Number.isNaN(idFornecedor) || idFornecedor <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -61,7 +61,7 @@ export class FornecedoresController {
         try {
             const idFornecedor = Number(req.params.id);
 
-            if (isNaN(idFornecedor) || idFornecedor <= 0) {
+            if (Number.isNaN(idFornecedor) || idFornecedor <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -88,7 +88,7 @@ export class FornecedoresController {
         try {
             const idFornecedor = Number(req.params.id);
 
-            if (isNaN(idFornecedor) || idFornecedor <= 0) {
+            if (Number.isNaN(idFornecedor) || idFornecedor <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],

@@ -21,7 +21,7 @@ export class LoteEstoqueController {
         try {
             const idLote = Number(req.params.id);
 
-            if (isNaN(idLote) || idLote <= 0) {
+            if (Number.isNaN(idLote) || idLote <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -50,7 +50,7 @@ export class LoteEstoqueController {
         try {
             const idProduto = Number(req.body.idProduto);
 
-            if (isNaN(idProduto) || idProduto <= 0) {
+            if (Number.isNaN(idProduto) || idProduto <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'idProduto', mensagem: 'Informe um idProduto valido.' }],
@@ -71,7 +71,7 @@ export class LoteEstoqueController {
         try {
             const idLote = Number(req.params.id);
 
-            if (isNaN(idLote) || idLote <= 0) {
+            if (Number.isNaN(idLote) || idLote <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -81,7 +81,7 @@ export class LoteEstoqueController {
 
             const idProduto = Number(req.body.idProduto);
 
-            if (isNaN(idProduto) || idProduto <= 0) {
+            if (Number.isNaN(idProduto) || idProduto <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'idProduto', mensagem: 'Informe um idProduto valido.' }],
@@ -108,7 +108,7 @@ export class LoteEstoqueController {
         try {
             const idLote = Number(req.params.id);
 
-            if (isNaN(idLote) || idLote <= 0) {
+            if (Number.isNaN(idLote) || idLote <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],

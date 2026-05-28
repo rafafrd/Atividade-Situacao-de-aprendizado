@@ -21,7 +21,7 @@ export class EstoqueController {
         try {
             const idEstoque = Number(req.params.id);
 
-            if (isNaN(idEstoque) || idEstoque <= 0) {
+            if (Number.isNaN(idEstoque) || idEstoque <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -51,7 +51,7 @@ export class EstoqueController {
             const idProduto = Number(req.body.idProduto);
             const { quantidadeAtual } = req.body;
 
-            if (isNaN(idProduto) || idProduto <= 0) {
+            if (Number.isNaN(idProduto) || idProduto <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'idProduto', mensagem: 'Informe um idProduto valido.' }],
@@ -71,7 +71,7 @@ export class EstoqueController {
         try {
             const idEstoque = Number(req.params.id);
 
-            if (isNaN(idEstoque) || idEstoque <= 0) {
+            if (Number.isNaN(idEstoque) || idEstoque <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -81,7 +81,7 @@ export class EstoqueController {
 
             const idProduto = Number(req.body.idProduto);
 
-            if (isNaN(idProduto) || idProduto <= 0) {
+            if (Number.isNaN(idProduto) || idProduto <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'idProduto', mensagem: 'Informe um idProduto valido.' }],
@@ -108,7 +108,7 @@ export class EstoqueController {
         try {
             const idEstoque = Number(req.params.id);
 
-            if (isNaN(idEstoque) || idEstoque <= 0) {
+            if (Number.isNaN(idEstoque) || idEstoque <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],

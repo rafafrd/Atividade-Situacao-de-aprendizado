@@ -21,7 +21,7 @@ export class MovimentacaoController {
         try {
             const idMovimentacao = Number(req.params.id);
 
-            if (isNaN(idMovimentacao) || idMovimentacao <= 0) {
+            if (Number.isNaN(idMovimentacao) || idMovimentacao <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -51,7 +51,7 @@ export class MovimentacaoController {
             const idLote = Number(req.body.idLote);
             const idProduto = Number(req.body.idProduto);
 
-            if (isNaN(idLote) || idLote <= 0) {
+            if (Number.isNaN(idLote) || idLote <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'idLote', mensagem: 'Informe um idLote valido.' }],
@@ -59,7 +59,7 @@ export class MovimentacaoController {
                 return;
             }
 
-            if (isNaN(idProduto) || idProduto <= 0) {
+            if (Number.isNaN(idProduto) || idProduto <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'idProduto', mensagem: 'Informe um idProduto valido.' }],
@@ -85,7 +85,7 @@ export class MovimentacaoController {
         try {
             const idMovimentacao = Number(req.params.id);
 
-            if (isNaN(idMovimentacao) || idMovimentacao <= 0) {
+            if (Number.isNaN(idMovimentacao) || idMovimentacao <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -96,7 +96,7 @@ export class MovimentacaoController {
             const idLote = Number(req.body.idLote);
             const idProduto = Number(req.body.idProduto);
 
-            if (isNaN(idLote) || idLote <= 0) {
+            if (Number.isNaN(idLote) || idLote <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'idLote', mensagem: 'Informe um idLote valido.' }],
@@ -104,7 +104,7 @@ export class MovimentacaoController {
                 return;
             }
 
-            if (isNaN(idProduto) || idProduto <= 0) {
+            if (Number.isNaN(idProduto) || idProduto <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'idProduto', mensagem: 'Informe um idProduto valido.' }],
@@ -137,7 +137,7 @@ export class MovimentacaoController {
         try {
             const idMovimentacao = Number(req.params.id);
 
-            if (isNaN(idMovimentacao) || idMovimentacao <= 0) {
+            if (Number.isNaN(idMovimentacao) || idMovimentacao <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
