@@ -800,6 +800,29 @@ collection:
             send: true
             store: true
           rebuildPath: true
+      - url: http://localhost:8000/estoque/report
+        name: "[OK] Report Estoque (JSON + PDF)"
+        meta:
+          id: req_d1001010001001001001001001001001
+          created: 1779275020000
+          modified: 1779275020000
+          isPrivate: false
+          description: "Gera relatorio completo do estoque. Retorna JSON com produto, categoria, fornecedor, quantidade, status e valor total. Tambem cria PDF em uploads/relatorio_YYYY-MM-DD.pdf. Esperado: 200 + { pdf, recurso[] }."
+          sortKey: -1779274681580
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/12.5.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
       - url: http://localhost:8000/estoque/1
         name: "[OK] Select Estoque por ID"
         meta:
