@@ -52,4 +52,8 @@ export class EstoqueService {
     async deletarEstoque(id: number) {
         return await this._repository.deletarEstoque(id);
     }
+
+    async relatorioEstoque() {
+        return await this._repository.relatorioEstoque();
+    }
 }

@@ -5,6 +5,7 @@ const estoqueRouter = Router();
 const estoqueController = new EstoqueController();
 
 estoqueRouter.get('/', estoqueController.listarTodos);
+estoqueRouter.get('/report', estoqueController.relatorioEstoque);
 estoqueRouter.get('/:id', estoqueController.buscarPorId);
 estoqueRouter.post('/', estoqueController.criarEstoque);
 estoqueRouter.put('/:id', estoqueController.atualizarEstoque);
