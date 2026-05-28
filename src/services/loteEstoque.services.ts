@@ -4,12 +4,26 @@ import { LoteEstoque } from '../models/loteEstoque.model';
 export class LoteEstoqueService {
     constructor(private readonly _repository = new LoteEstoqueRepository()) { }
 
+    private _calcularAlerta(diasParaVencer: number): string | null {
+        if (diasParaVencer <= 45) return `CRÍTICO - vence em ${diasParaVencer} dia(s)`;
+        if (diasParaVencer <= 90) return `ATENÇÃO - vence em ${diasParaVencer} dia(s)`;
+        return null;
+    }
+
+    private _adicionarAlertas(lotes: any[]): any[] {
+        return lotes.map((lote) => {
+            const alerta = this._calcularAlerta(lote.dias_para_vencer);
+            return alerta !== null ? { ...lote, alerta } : lote;
+        });
+    }
+
     /**
      * Retorna todos os lotes de estoque cadastrados.
      * @returns Promise com a lista de lotes.
      */
     async selecionarTodos() {
-        return await this._repository.selectTodos();
+        const lotes = await this._repository.selectTodos();
+        return this._adicionarAlertas(lotes as unknown as any[]);
     }
 
     /**
@@ -18,7 +32,8 @@ export class LoteEstoqueService {
      * @returns Promise com os dados do lote encontrado.
      */
     async selecionarPorId(id: number) {
-        return await this._repository.selectById(id);
+        const lotes = await this._repository.selectById(id);
+        return this._adicionarAlertas(lotes as unknown as any[]);
     }
 
     /**

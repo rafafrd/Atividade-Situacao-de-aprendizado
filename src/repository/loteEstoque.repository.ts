@@ -9,7 +9,7 @@ export class LoteEstoqueRepository {
      * @returns Promise com os dados de todos os lotes.
      */
     async selectTodos(): Promise<ResultSetHeader> {
-        const sql = 'SELECT id_lote, id_produto, DATE_FORMAT(dt_vencimento, "%d-%m-%Y") AS dt_vencimento, quantidade_lote FROM lote_estoque';
+        const sql = 'SELECT id_lote, id_produto, DATE_FORMAT(dt_vencimento, "%d-%m-%Y") AS dt_vencimento, quantidade_lote, DATEDIFF(dt_vencimento, CURDATE()) AS dias_para_vencer FROM lote_estoque';
         const [rows] = await db.execute<ResultSetHeader>(sql);
         return rows;
     }
@@ -20,7 +20,7 @@ export class LoteEstoqueRepository {
      * @returns Promise com os dados do lote encontrado.
      */
     async selectById(id: number): Promise<ResultSetHeader> {
-        const sql = 'SELECT id_lote, id_produto, DATE_FORMAT(dt_vencimento, "%d-%m-%Y") AS dt_vencimento, quantidade_lote FROM lote_estoque WHERE id_lote = ?';
+        const sql = 'SELECT id_lote, id_produto, DATE_FORMAT(dt_vencimento, "%d-%m-%Y") AS dt_vencimento, quantidade_lote, DATEDIFF(dt_vencimento, CURDATE()) AS dias_para_vencer FROM lote_estoque WHERE id_lote = ?';
         const values = [id];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows;
