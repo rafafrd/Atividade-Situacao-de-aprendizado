@@ -4,7 +4,7 @@ import fs from 'node:fs';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const PDFDocument = require('pdfkit');
 
-interface ItemRelatorio {
+export interface ItemRelatorio {
     dc_produto: string;
     dc_categoria: string;
     dc_fornecedor: string;

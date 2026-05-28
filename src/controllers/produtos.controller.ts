@@ -68,7 +68,7 @@ export class ProdutosController {
             }
 
             const { dcProduto, preco, estoqueMinimo } = req.body;
-            const vinculoImagem = (req as any).file?.filename ?? '';
+            const vinculoImagem = req.file?.filename ?? '';
 
             const novoProduto = await this._service.adicionarProduto(
                 dcProduto,
@@ -117,7 +117,7 @@ export class ProdutosController {
             }
 
             const { dcProduto, preco, estoqueMinimo } = req.body;
-            const vinculoImagem = (req as any).file?.filename ?? '';
+            const vinculoImagem = req.file?.filename ?? '';
 
             const produtoAlterado = await this._service.editarProduto(
                 idProduto,

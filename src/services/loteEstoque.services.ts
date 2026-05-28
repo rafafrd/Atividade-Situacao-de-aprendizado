@@ -1,6 +1,11 @@
 import { LoteEstoqueRepository } from '../repository/loteEstoque.repository';
 import { LoteEstoque } from '../models/loteEstoque.model';
 
+interface LoteRow {
+    dias_para_vencer: number;
+    [key: string]: unknown;
+}
+
 export class LoteEstoqueService {
     constructor(private readonly _repository = new LoteEstoqueRepository()) { }
 
@@ -10,7 +15,7 @@ export class LoteEstoqueService {
         return null;
     }
 
-    private _adicionarAlertas(lotes: any[]): any[] {
+    private _adicionarAlertas(lotes: LoteRow[]): LoteRow[] {
         return lotes.map((lote) => {
             const alerta = this._calcularAlerta(lote.dias_para_vencer);
             return alerta !== null ? { ...lote, alerta } : lote;
@@ -23,7 +28,7 @@ export class LoteEstoqueService {
      */
     async selecionarTodos() {
         const lotes = await this._repository.selectTodos();
-        return this._adicionarAlertas(lotes as unknown as any[]);
+        return this._adicionarAlertas(lotes as unknown as LoteRow[]);
     }
 
     /**
@@ -33,7 +38,7 @@ export class LoteEstoqueService {
      */
     async selecionarPorId(id: number) {
         const lotes = await this._repository.selectById(id);
-        return this._adicionarAlertas(lotes as unknown as any[]);
+        return this._adicionarAlertas(lotes as unknown as LoteRow[]);
     }
 
     /**
