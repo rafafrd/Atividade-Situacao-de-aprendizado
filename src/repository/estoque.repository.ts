@@ -9,23 +9,8 @@ export class EstoqueRepository {
      * @returns Promise com os dados de todos os estoques.
      */
     async selectTodos(): Promise<ResultSetHeader> {
-        const sql = `
-            SELECT
-                e.*,
-                p.estoque_minimo,
-                CASE
-                    WHEN e.quantidade_atual <= p.estoque_minimo THEN 'ESTOQUE BAIXO'
-                    ELSE 'OK'
-                END AS status_estoque
-            FROM Estoque e
-            INNER JOIN produtos p ON p.id_produto = e.id_produto
-            ORDER BY
-                CASE
-                    WHEN e.quantidade_atual <= p.estoque_minimo THEN 0
-                    ELSE 1
-                END,
-                e.quantidade_atual ASC
-        `;
+        // VIEW `estoqueSelect` — definida em docs/db.sql. Crie-a no banco antes de usar.
+        const sql = 'SELECT * FROM estoqueSelect';
         const [rows] = await db.execute<ResultSetHeader>(sql);
         return rows;
     }
@@ -36,18 +21,10 @@ export class EstoqueRepository {
      * @returns Promise com os dados do estoque encontrado.
      */
     async selectById(id: number): Promise<ResultSetHeader> {
-        const sql = `
-            SELECT
-                e.*,
-                p.estoque_minimo,
-                CASE
-                    WHEN e.quantidade_atual <= p.estoque_minimo THEN 'ESTOQUE BAIXO'
-                    ELSE 'OK'
-                END AS status_estoque
-            FROM Estoque e
-            INNER JOIN produtos p ON p.id_produto = e.id_produto
-            WHERE e.id_estoque = ?
-        `;
+        // VIEW `estoqueID` — definida em docs/db.sql. Crie-a no banco antes de usar.
+        // ATENÇÃO: a definição em docs/db.sql contém "WHERE e.id_estoque = ?" que é
+        // inválido em VIEW — remova esse WHERE da view e mantenha apenas o filtro aqui.
+        const sql = 'SELECT * FROM estoqueID WHERE id_estoque = ?';
         const values = [id];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows;
@@ -91,46 +68,8 @@ export class EstoqueRepository {
     }
 
     async relatorioEstoque(): Promise<ResultSetHeader> {
-        const sql = `
-            SELECT
-                p.id_produto,
-                p.dc_produto,
-                p.preco,
-                p.estoque_minimo,
-                c.dc_categoria,
-                f.dc_fornecedor,
-                COALESCE(e.quantidade_atual, 0)      AS quantidade_atual,
-                e.dt_ultima_atualizacao,
-                COALESCE(SUM(l.quantidade_lote), 0)  AS total_em_lotes,
-                MIN(l.dt_vencimento)                 AS proximo_vencimento,
-                ROUND(p.preco * COALESCE(e.quantidade_atual, 0), 2) AS valor_total_estoque,
-                CASE
-                    WHEN COALESCE(e.quantidade_atual, 0) <= 0              THEN 'SEM_ESTOQUE'
-                    WHEN COALESCE(e.quantidade_atual, 0) <= p.estoque_minimo THEN 'ESTOQUE_BAIXO'
-                    ELSE 'NORMAL'
-                END AS status_estoque
-            FROM Produtos p
-            INNER JOIN Categorias   c ON c.id_categoria  = p.id_categoria
-            INNER JOIN Fornecedores f ON f.id_fornecedor = p.id_fornecedor
-            LEFT  JOIN Estoque      e ON e.id_produto    = p.id_produto
-            LEFT  JOIN Lote_Estoque l ON l.id_produto    = p.id_produto
-            GROUP BY
-                p.id_produto,
-                p.dc_produto,
-                p.preco,
-                p.estoque_minimo,
-                c.dc_categoria,
-                f.dc_fornecedor,
-                e.quantidade_atual,
-                e.dt_ultima_atualizacao
-            ORDER BY
-                CASE
-                    WHEN COALESCE(e.quantidade_atual, 0) <= 0               THEN 0
-                    WHEN COALESCE(e.quantidade_atual, 0) <= p.estoque_minimo THEN 1
-                    ELSE 2
-                END,
-                p.dc_produto ASC
-        `;
+        // VIEW `relatorio_estoque` — definida em docs/db.sql. Crie-a no banco antes de usar.
+        const sql = 'SELECT * FROM relatorio_estoque';
         const [rows] = await db.execute<ResultSetHeader>(sql);
         return rows;
     }
