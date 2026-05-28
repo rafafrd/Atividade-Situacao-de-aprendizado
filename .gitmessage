@@ -1,0 +1,51 @@
+# <tipo>(<escopo>): <resumo> ← linha do título (máx 72 chars)
+
+#
+
+# Tipos:
+
+# feat → nova funcionalidade
+
+# fix → correção de bug
+
+# refactor → refatoração sem mudança de comportamento
+
+# chore → tarefas de build, dependências, config
+
+# docs → documentação
+
+# test → testes
+
+# style → formatação, espaços (sem lógica)
+
+#
+
+# Escopos comuns neste projeto:
+
+# estoque, produto, fornecedor, movimentacao, auth, db
+
+#
+
+# Exemplos:
+
+# feat(estoque): adiciona alerta de estoque baixo
+
+# fix(produto): corrige validação de quantidade negativa
+
+# chore(deps): atualiza typescript para 6.0
+
+# refactor(db): extrai helper de conexão para módulo separado
+
+#
+
+# Corpo (opcional) — explique o POR QUÊ, não o que foi feito:
+
+#
+
+#
+
+# Rodapé (opcional) — closes, breaking change:
+
+# Closes #42
+
+# BREAKING CHANGE: campo `qtd` renomeado para `quantidade`
