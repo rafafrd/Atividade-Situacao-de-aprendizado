@@ -21,7 +21,7 @@ export class ProdutosController {
         try {
             const idProduto = Number(req.params.id);
 
-            if (idProduto === null) {
+            if (isNaN(idProduto) || idProduto <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -30,6 +30,12 @@ export class ProdutosController {
             }
 
             const produto = await this._service.selecionarPorId(idProduto);
+
+            if (!produto || (Array.isArray(produto) && produto.length === 0)) {
+                res.status(404).json({ mensagem: 'Produto não encontrado.' });
+                return;
+            }
+
             res.status(200).json({
                 mensagem: 'Produto encontrado com sucesso.',
                 recurso: produto,
@@ -42,7 +48,26 @@ export class ProdutosController {
 
     criarProduto = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { dcProduto, preco, estoqueMinimo, idCategoria, idFornecedor } = req.body;
+            const idCategoria = Number(req.body.idCategoria);
+            const idFornecedor = Number(req.body.idFornecedor);
+
+            if (isNaN(idCategoria) || idCategoria <= 0) {
+                res.status(400).json({
+                    mensagem: 'Dados invalidos.',
+                    erros: [{ campo: 'idCategoria', mensagem: 'Informe um idCategoria valido.' }],
+                });
+                return;
+            }
+
+            if (isNaN(idFornecedor) || idFornecedor <= 0) {
+                res.status(400).json({
+                    mensagem: 'Dados invalidos.',
+                    erros: [{ campo: 'idFornecedor', mensagem: 'Informe um idFornecedor valido.' }],
+                });
+                return;
+            }
+
+            const { dcProduto, preco, estoqueMinimo } = req.body;
             const vinculoImagem = (req as any).file?.filename ?? '';
 
             const novoProduto = await this._service.adicionarProduto(
@@ -50,8 +75,8 @@ export class ProdutosController {
                 vinculoImagem,
                 Number(preco),
                 Number(estoqueMinimo),
-                Number(idCategoria),
-                Number(idFornecedor)
+                idCategoria,
+                idFornecedor
             );
             res.status(201).json({ novoProduto });
         } catch (error) {
@@ -63,7 +88,35 @@ export class ProdutosController {
     atualizarProduto = async (req: Request, res: Response): Promise<void> => {
         try {
             const idProduto = Number(req.params.id);
-            const { dcProduto, preco, estoqueMinimo, idCategoria, idFornecedor } = req.body;
+
+            if (isNaN(idProduto) || idProduto <= 0) {
+                res.status(400).json({
+                    mensagem: 'Dados invalidos.',
+                    erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
+                });
+                return;
+            }
+
+            const idCategoria = Number(req.body.idCategoria);
+            const idFornecedor = Number(req.body.idFornecedor);
+
+            if (isNaN(idCategoria) || idCategoria <= 0) {
+                res.status(400).json({
+                    mensagem: 'Dados invalidos.',
+                    erros: [{ campo: 'idCategoria', mensagem: 'Informe um idCategoria valido.' }],
+                });
+                return;
+            }
+
+            if (isNaN(idFornecedor) || idFornecedor <= 0) {
+                res.status(400).json({
+                    mensagem: 'Dados invalidos.',
+                    erros: [{ campo: 'idFornecedor', mensagem: 'Informe um idFornecedor valido.' }],
+                });
+                return;
+            }
+
+            const { dcProduto, preco, estoqueMinimo } = req.body;
             const vinculoImagem = (req as any).file?.filename ?? '';
 
             const produtoAlterado = await this._service.editarProduto(
@@ -72,9 +125,15 @@ export class ProdutosController {
                 vinculoImagem,
                 Number(preco),
                 Number(estoqueMinimo),
-                Number(idCategoria),
-                Number(idFornecedor)
+                idCategoria,
+                idFornecedor
             );
+
+            if (produtoAlterado.affectedRows === 0) {
+                res.status(404).json({ mensagem: 'Produto não encontrado.' });
+                return;
+            }
+
             res.status(201).json({ produtoAlterado });
         } catch (error) {
             console.log(error);
@@ -86,7 +145,7 @@ export class ProdutosController {
         try {
             const idProduto = Number(req.params.id);
 
-            if (idProduto === null) {
+            if (isNaN(idProduto) || idProduto <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -94,7 +153,13 @@ export class ProdutosController {
                 return;
             }
 
-            await this._service.deletarProduto(idProduto);
+            const resultado = await this._service.deletarProduto(idProduto);
+
+            if (resultado.affectedRows === 0) {
+                res.status(404).json({ mensagem: 'Produto não encontrado.' });
+                return;
+            }
+
             res.status(200).json({ mensagem: 'Produto deletado com sucesso.' });
         } catch (error) {
             console.log(error);

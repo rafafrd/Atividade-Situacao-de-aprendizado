@@ -21,7 +21,7 @@ export class CategoriasController {
     try {
       const idCategoria = Number(req.params.id);
 
-      if (idCategoria === null) {
+      if (isNaN(idCategoria) || idCategoria <= 0) {
         res.status(400).json({
           mensagem: 'Dados invalidos.',
           erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -30,6 +30,12 @@ export class CategoriasController {
       }
 
       const categoria = await this._service.selecionarPorId(idCategoria);
+
+      if (!categoria || (Array.isArray(categoria) && categoria.length === 0)) {
+        res.status(404).json({ mensagem: 'Categoria não encontrada.' });
+        return;
+      }
+
       res.status(200).json({
         mensagem: 'Categoria encontrada com sucesso.',
         recurso: categoria,
@@ -53,9 +59,24 @@ export class CategoriasController {
 
   atualizarCategoria = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { descricao } = req.body;
       const idCategoria = Number(req.params.id);
+
+      if (isNaN(idCategoria) || idCategoria <= 0) {
+        res.status(400).json({
+          mensagem: 'Dados invalidos.',
+          erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
+        });
+        return;
+      }
+
+      const { descricao } = req.body;
       const categoriaAlterada = await this._service.editarCategoria(idCategoria, descricao);
+
+      if (categoriaAlterada.affectedRows === 0) {
+        res.status(404).json({ mensagem: 'Categoria não encontrada.' });
+        return;
+      }
+
       res.status(201).json({ categoriaAlterada })
     } catch (error) {
       console.log(error)
@@ -67,7 +88,7 @@ export class CategoriasController {
     try {
       const idCategoria = Number(req.params.id);
 
-      if (idCategoria === null) {
+      if (isNaN(idCategoria) || idCategoria <= 0) {
         res.status(400).json({
           mensagem: 'Dados invalidos.',
           erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -75,7 +96,13 @@ export class CategoriasController {
         return;
       }
 
-      await this._service.deletarCategoria(idCategoria);
+      const resultado = await this._service.deletarCategoria(idCategoria);
+
+      if (resultado.affectedRows === 0) {
+        res.status(404).json({ mensagem: 'Categoria não encontrada.' });
+        return;
+      }
+
       res.status(200).json({ mensagem: 'Categoria deletada com sucesso.' });
     } catch (error) {
       console.log(error)

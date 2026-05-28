@@ -4,11 +4,6 @@ import { EstoqueService } from '../services/estoque.services';
 export class EstoqueController {
     constructor(private readonly _service = new EstoqueService()) { }
 
-    /**
-     * Lista todos os registros de estoque.
-     * @param req - Objeto de requisição Express.
-     * @param res - Objeto de resposta Express.
-     */
     listarTodos = async (req: Request, res: Response): Promise<void> => {
         try {
             const estoques = await this._service.selecionarTodos();
@@ -22,16 +17,11 @@ export class EstoqueController {
         }
     };
 
-    /**
-     * Busca um registro de estoque pelo ID informado na URL.
-     * @param req - Objeto de requisição Express (params.id).
-     * @param res - Objeto de resposta Express.
-     */
     buscarPorId = async (req: Request, res: Response): Promise<void> => {
         try {
             const idEstoque = Number(req.params.id);
 
-            if (idEstoque === null) {
+            if (isNaN(idEstoque) || idEstoque <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -40,6 +30,12 @@ export class EstoqueController {
             }
 
             const estoque = await this._service.selecionarPorId(idEstoque);
+
+            if (!estoque || (Array.isArray(estoque) && estoque.length === 0)) {
+                res.status(404).json({ mensagem: 'Estoque não encontrado.' });
+                return;
+            }
+
             res.status(200).json({
                 mensagem: 'Estoque encontrado com sucesso.',
                 recurso: estoque,
@@ -50,14 +46,19 @@ export class EstoqueController {
         }
     };
 
-    /**
-     * Cria um novo registro de estoque com os dados do corpo da requisição.
-     * @param req - Objeto de requisição Express (body: { idProduto, quantidadeAtual }).
-     * @param res - Objeto de resposta Express.
-     */
     criarEstoque = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { idProduto, quantidadeAtual } = req.body;
+            const idProduto = Number(req.body.idProduto);
+            const { quantidadeAtual } = req.body;
+
+            if (isNaN(idProduto) || idProduto <= 0) {
+                res.status(400).json({
+                    mensagem: 'Dados invalidos.',
+                    erros: [{ campo: 'idProduto', mensagem: 'Informe um idProduto valido.' }],
+                });
+                return;
+            }
+
             const novoEstoque = await this._service.adicionarEstoque(idProduto, quantidadeAtual);
             res.status(201).json({ novoEstoque });
         } catch (error) {
@@ -66,33 +67,11 @@ export class EstoqueController {
         }
     };
 
-    /**
-     * Atualiza um registro de estoque existente pelo ID informado na URL.
-     * @param req - Objeto de requisição Express (params.id, body: { idProduto, quantidadeAtual }).
-     * @param res - Objeto de resposta Express.
-     */
     atualizarEstoque = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { idProduto, quantidadeAtual } = req.body;
-            const idEstoque = Number(req.params.id);
-            const estoqueAlterado = await this._service.editarEstoque(idEstoque, idProduto, quantidadeAtual);
-            res.status(201).json({ estoqueAlterado });
-        } catch (error) {
-            console.log(error);
-            res.status(500).json({ mensagem: 'Erro interno do servidor.', error: error instanceof Error ? error.message : 'Erro desconhecido' });
-        }
-    };
-
-    /**
-     * Remove um registro de estoque pelo ID informado na URL.
-     * @param req - Objeto de requisição Express (params.id).
-     * @param res - Objeto de resposta Express.
-     */
-    deletarEstoque = async (req: Request, res: Response): Promise<void> => {
-        try {
             const idEstoque = Number(req.params.id);
 
-            if (idEstoque === null) {
+            if (isNaN(idEstoque) || idEstoque <= 0) {
                 res.status(400).json({
                     mensagem: 'Dados invalidos.',
                     erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
@@ -100,7 +79,50 @@ export class EstoqueController {
                 return;
             }
 
-            await this._service.deletarEstoque(idEstoque);
+            const idProduto = Number(req.body.idProduto);
+
+            if (isNaN(idProduto) || idProduto <= 0) {
+                res.status(400).json({
+                    mensagem: 'Dados invalidos.',
+                    erros: [{ campo: 'idProduto', mensagem: 'Informe um idProduto valido.' }],
+                });
+                return;
+            }
+
+            const { quantidadeAtual } = req.body;
+            const estoqueAlterado = await this._service.editarEstoque(idEstoque, idProduto, quantidadeAtual);
+
+            if (estoqueAlterado.affectedRows === 0) {
+                res.status(404).json({ mensagem: 'Estoque não encontrado.' });
+                return;
+            }
+
+            res.status(201).json({ estoqueAlterado });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ mensagem: 'Erro interno do servidor.', error: error instanceof Error ? error.message : 'Erro desconhecido' });
+        }
+    };
+
+    deletarEstoque = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const idEstoque = Number(req.params.id);
+
+            if (isNaN(idEstoque) || idEstoque <= 0) {
+                res.status(400).json({
+                    mensagem: 'Dados invalidos.',
+                    erros: [{ campo: 'id', mensagem: 'Informe um id valido.' }],
+                });
+                return;
+            }
+
+            const resultado = await this._service.deletarEstoque(idEstoque);
+
+            if (resultado.affectedRows === 0) {
+                res.status(404).json({ mensagem: 'Estoque não encontrado.' });
+                return;
+            }
+
             res.status(200).json({ mensagem: 'Estoque deletado com sucesso.' });
         } catch (error) {
             console.log(error);

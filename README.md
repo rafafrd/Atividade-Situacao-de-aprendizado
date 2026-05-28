@@ -39,6 +39,3 @@ O sistema deverá contemplar, no mínimo, as seguintes funcionalidades:
 ### Requisitos de projeto
 
 A solução deve ser projetada de forma a permitir a **evolução do sistema**, possibilitando a inclusão de novas regras de negócio, relatórios e formas de controle sem impactar significativamente o código existente.
-
-
-ronaldo
