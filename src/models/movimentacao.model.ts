@@ -69,6 +69,7 @@ export class Movimentacao {
     }
 
     public set TipoMovimento(value: TipoMovimento) {
+        this._validarMovimento(value);
         this._tipoMovimento = value;
     }
 
@@ -105,4 +106,9 @@ export class Movimentacao {
             throw new TypeError('A quantidade deve ser maior que zero.');
         }
     }
+    private _validarMovimento(value: TipoMovimento): void {
+        if (!Object.values(TipoMovimento).includes(value)) {
+            throw new TypeError('Tipo de movimento inválido. Deve ser ENTRADA ou SAIDA.');
+        }
+}
 }

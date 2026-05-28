@@ -5,8 +5,8 @@ export class LoteEstoqueService {
     constructor(private readonly _repository = new LoteEstoqueRepository()) { }
 
     private _calcularAlerta(diasParaVencer: number): string | null {
-        if (diasParaVencer <= 45) return `CRÍTICO - vence em ${diasParaVencer} dia(s)`;
-        if (diasParaVencer <= 90) return `ATENÇÃO - vence em ${diasParaVencer} dia(s)`;
+        if (diasParaVencer <= 45) return `CRITICO - vence em ${diasParaVencer} dias`;
+        if (diasParaVencer <= 90) return `ATENÇÃO - vence em ${diasParaVencer} dias`;
         return null;
     }
 
