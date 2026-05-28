@@ -1,5 +1,7 @@
+import path from 'path';
 import { Request, Response } from 'express';
 import { EstoqueService } from '../services/estoque.services';
+import { gerarRelatorioPDF } from '../utils/relatorio.pdf';
 
 export class EstoqueController {
     constructor(private readonly _service = new EstoqueService()) { }
@@ -107,8 +109,14 @@ export class EstoqueController {
     relatorioEstoque = async (req: Request, res: Response): Promise<void> => {
         try {
             const relatorio = await this._service.relatorioEstoque();
+
+            const nomeArquivo = `relatorio_${new Date().toISOString().slice(0, 10)}.pdf`;
+            const caminhoPdf = path.join(process.cwd(), 'uploads', nomeArquivo);
+            await gerarRelatorioPDF(relatorio as unknown as any[], caminhoPdf); // infelizmente tem que ser forçado o tipo aqui
+
             res.status(200).json({
                 mensagem: 'Relatório de estoque gerado com sucesso.',
+                pdf: nomeArquivo,
                 recurso: relatorio,
             });
         } catch (error) {
