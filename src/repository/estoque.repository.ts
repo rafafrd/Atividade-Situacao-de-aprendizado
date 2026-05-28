@@ -9,7 +9,8 @@ export class EstoqueRepository {
      * @returns Promise com os dados de todos os estoques.
      */
     async selectTodos(): Promise<ResultSetHeader> {
-        const sql = 'SELECT * FROM Estoque';
+        // VIEW `estoqueSelect` — definida em docs/db.sql. Crie-a no banco antes de usar.
+        const sql = 'SELECT * FROM estoqueSelect';
         const [rows] = await db.execute<ResultSetHeader>(sql);
         return rows;
     }
@@ -20,7 +21,10 @@ export class EstoqueRepository {
      * @returns Promise com os dados do estoque encontrado.
      */
     async selectById(id: number): Promise<ResultSetHeader> {
-        const sql = 'SELECT * FROM Estoque WHERE id_estoque = ?';
+        // VIEW `estoqueID` — definida em docs/db.sql. Crie-a no banco antes de usar.
+        // ATENÇÃO: a definição em docs/db.sql contém "WHERE e.id_estoque = ?" que é
+        // inválido em VIEW — remova esse WHERE da view e mantenha apenas o filtro aqui.
+        const sql = 'SELECT * FROM estoqueID WHERE id_estoque = ?';
         const values = [id];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows;
@@ -60,6 +64,13 @@ export class EstoqueRepository {
         const sql = 'DELETE FROM Estoque WHERE id_estoque = ?';
         const values = [id];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
+        return rows;
+    }
+
+    async relatorioEstoque(): Promise<ResultSetHeader> {
+        // VIEW `relatorio_estoque` — definida em docs/db.sql. Crie-a no banco antes de usar.
+        const sql = 'SELECT * FROM relatorio_estoque';
+        const [rows] = await db.execute<ResultSetHeader>(sql);
         return rows;
     }
 }

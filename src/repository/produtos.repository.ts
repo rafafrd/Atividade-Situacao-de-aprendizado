@@ -5,7 +5,24 @@ import { ResultSetHeader } from 'mysql2';
 export class ProdutosRepository {
 
     async selectTodos(): Promise<ResultSetHeader> {
-        const sql = 'SELECT * FROM produtos';
+        const sql = `
+            SELECT
+                p.*
+            FROM produtos p
+            LEFT JOIN (
+                SELECT
+                    id_produto,
+                    MIN(quantidade_atual) AS quantidade_atual
+                FROM estoque
+                GROUP BY id_produto
+            ) e ON e.id_produto = p.id_produto
+            ORDER BY
+                CASE
+                    WHEN COALESCE(e.quantidade_atual, 0) <= p.estoque_minimo THEN 0
+                    ELSE 1
+                END,
+                COALESCE(e.quantidade_atual, 0) ASC
+        `;
         const [rows] = await db.execute<ResultSetHeader>(sql);
         return rows;
     }

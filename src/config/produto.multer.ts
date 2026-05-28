@@ -1,7 +1,7 @@
 import multer from "multer";
-import path from 'path';
-import crypto from 'crypto';
-import fs from 'fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { Request } from "express";
 
 const baseUploadDir = path.resolve(process.cwd(), 'uploads');
