@@ -104,6 +104,19 @@ export class EstoqueController {
         }
     };
 
+    relatorioEstoque = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const relatorio = await this._service.relatorioEstoque();
+            res.status(200).json({
+                mensagem: 'Relatório de estoque gerado com sucesso.',
+                recurso: relatorio,
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ mensagem: 'Erro interno do servidor.', error: error instanceof Error ? error.message : 'Erro desconhecido' });
+        }
+    };
+
     deletarEstoque = async (req: Request, res: Response): Promise<void> => {
         try {
             const idEstoque = Number(req.params.id);

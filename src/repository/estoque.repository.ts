@@ -89,4 +89,49 @@ export class EstoqueRepository {
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows;
     }
+
+    async relatorioEstoque(): Promise<ResultSetHeader> {
+        const sql = `
+            SELECT
+                p.id_produto,
+                p.dc_produto,
+                p.preco,
+                p.estoque_minimo,
+                c.dc_categoria,
+                f.dc_fornecedor,
+                COALESCE(e.quantidade_atual, 0)      AS quantidade_atual,
+                e.dt_ultima_atualizacao,
+                COALESCE(SUM(l.quantidade_lote), 0)  AS total_em_lotes,
+                MIN(l.dt_vencimento)                 AS proximo_vencimento,
+                ROUND(p.preco * COALESCE(e.quantidade_atual, 0), 2) AS valor_total_estoque,
+                CASE
+                    WHEN COALESCE(e.quantidade_atual, 0) <= 0              THEN 'SEM_ESTOQUE'
+                    WHEN COALESCE(e.quantidade_atual, 0) <= p.estoque_minimo THEN 'ESTOQUE_BAIXO'
+                    ELSE 'NORMAL'
+                END AS status_estoque
+            FROM Produtos p
+            INNER JOIN Categorias   c ON c.id_categoria  = p.id_categoria
+            INNER JOIN Fornecedores f ON f.id_fornecedor = p.id_fornecedor
+            LEFT  JOIN Estoque      e ON e.id_produto    = p.id_produto
+            LEFT  JOIN Lote_Estoque l ON l.id_produto    = p.id_produto
+            GROUP BY
+                p.id_produto,
+                p.dc_produto,
+                p.preco,
+                p.estoque_minimo,
+                c.dc_categoria,
+                f.dc_fornecedor,
+                e.quantidade_atual,
+                e.dt_ultima_atualizacao
+            ORDER BY
+                CASE
+                    WHEN COALESCE(e.quantidade_atual, 0) <= 0               THEN 0
+                    WHEN COALESCE(e.quantidade_atual, 0) <= p.estoque_minimo THEN 1
+                    ELSE 2
+                END,
+                p.dc_produto ASC
+        `;
+        const [rows] = await db.execute<ResultSetHeader>(sql);
+        return rows;
+    }
 }
