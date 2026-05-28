@@ -16,60 +16,60 @@
  * - Getters e Setters: Permitem acessar e modificar os atributos do lote de estoque.
  */
 export class LoteEstoque {
-    private readonly _idLote?: number;
-    private readonly _idProduto: number = 0;
-    private _dataVencimento: Date = new Date();
-    private _quantidade_lote: number = 0;
+  private readonly _idLote?: number;
+  private readonly _idProduto: number = 0;
+  private _dataVencimento: Date = new Date();
+  private _quantidade_lote: number = 0;
 
-    constructor(
-      idProduto: number,
-      dataVencimento: Date,
-      quantidade: number,
-      idLote?: number
-    ) {
-      this._idProduto = idProduto;
-      this._dataVencimento = dataVencimento;
-      this.Quantidade = quantidade;
-      this._idLote = idLote;
-    }
-    // getters
-    public get IdLote(): number | undefined {
-      return this._idLote;
-    }
-    public get IdProduto(): number {
-      return this._idProduto;
-    }
-    public get DataVencimento(): Date {
-      return this._dataVencimento;
-    }
-    public get Quantidade(): number {
-      return this._quantidade_lote;
-    }
+  constructor(
+    idProduto: number,
+    dataVencimento: Date,
+    quantidade: number,
+    idLote?: number,
+  ) {
+    this._idProduto = idProduto;
+    this.DataVencimento = dataVencimento;
+    this.Quantidade = quantidade;
+    this._idLote = idLote;
+  }
+  // getters
+  public get IdLote(): number | undefined {
+    return this._idLote;
+  }
+  public get IdProduto(): number {
+    return this._idProduto;
+  }
+  public get DataVencimento(): Date {
+    return this._dataVencimento;
+  }
+  public get Quantidade(): number {
+    return this._quantidade_lote;
+  }
 
-    // setters
-    public set DataVencimento(value: Date) {
-      this._dataVencimento = value;
-    }
-    public set Quantidade(value: number) {
-      this._validarQuantidadeLote(value);
-      this._quantidade_lote = value;
-    }
+  // setters
+  public set DataVencimento(value: Date) {
+    this._validarDataVencimento(value);
+    this._dataVencimento = value;
+  }
+  public set Quantidade(value: number) {
+    this._validarQuantidadeLote(value);
+    this._quantidade_lote = value;
+  }
 
-    public validar_vencimento(): boolean {
-      const hoje = new Date();
-      return hoje < this._dataVencimento;
-    }
 
-    private _validarQuantidadeLote(value: number): void {
-      if (typeof value !== 'number' || value < 0) {
-        throw new TypeError('A quantidade do lote deve ser um número válido e não negativo.');
-      }
-    }
-
-    // melhorar essa função para enviar um json
-    public notificarEstoqueMinimo(): void {
-      if (this._quantidade_lote <= 10) {
-        console.log(`Atenção: O lote ${this._idLote} do produto ${this._idProduto} atingiu o estoque mínimo. Quantidade atual: ${this._quantidade_lote  }`);
-      }
+  private _validarQuantidadeLote(value: number): void {
+    if (typeof value !== "number" || value <= 0) {
+      throw new TypeError(
+        "A quantidade do lote deve ser um número válido e não negativo.",
+      );
     }
   }
+
+  // melhorar essa função para enviar um json
+  private _validarDataVencimento(value: Date): void {
+    const hoje = new Date();
+    if (value <= hoje) {
+      throw new Error("A data de vencimento deve ser uma data futura.");
+    }
+  }
+}
