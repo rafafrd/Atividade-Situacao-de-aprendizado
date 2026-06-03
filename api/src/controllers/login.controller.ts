@@ -11,7 +11,7 @@ export class LoginController {
   constructor() {
     this.loginRepo = new LoginRepository();
     this.jwtService = new JwtService();
-    this.bcryptRounds = Number(process.env.BCRYPT_ROUNDS) || 10;
+    this.bcryptRounds = Number(process.env.BCRYPT_ROUNDS);
   }
 
   criar: (req: Request, res: Response) => void = async (req, res) => {
