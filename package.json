@@ -1,0 +1,17 @@
+{
+  "name": "stockplus-workspace",
+  "version": "1.0.0",
+  "description": "Orquestrador do StockPlus: sobe a API e o app mobile juntos.",
+  "private": true,
+  "scripts": {
+    "info": "node scripts/dev-info.js",
+    "start": "node scripts/dev-info.js && concurrently -k -n \"API,MOBILE\" -c \"blue,magenta\" \"npm:start:api\" \"npm:start:mobile\"",
+    "start:api": "cd api && npm start",
+    "start:mobile": "cd mobile && npm start",
+    "dev": "echo --- [1/3] Build da API... && cd api && npm run build && echo --- [2/3] Lint da API... && npm run lint && cd ../mobile && echo --- [3/3] Typecheck do mobile... && npm run typecheck",
+    "install:all": "npm install && cd api && npm install && cd ../mobile && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
