@@ -1,85 +1,185 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
   Platform,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../constants/colors';
+import { login } from '../services/auth';
 
 export default function LoginScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
+
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleLogin() {
+    setError('');
+
+    const trimmedUser = username.trim();
+    if (!trimmedUser || !password) {
+      setError('Preencha usuário e senha.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await login(trimmedUser, password);
+      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao realizar login.';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primaryDark} />
 
-      <View style={[styles.content, { paddingTop: insets.top + 60, paddingBottom: insets.bottom + 24 }]}>
-        {/* Decorative circles */}
-        <View style={styles.decorCircle1} />
-        <View style={styles.decorCircle2} />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={[
+            styles.content,
+            { paddingTop: insets.top + 48, paddingBottom: insets.bottom + 24 },
+          ]}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Decorative circles */}
+          <View style={styles.decorCircle1} />
+          <View style={styles.decorCircle2} />
 
-        {/* Top Section - Logo & Text */}
-        <View style={styles.topSection}>
-          <View style={styles.logoContainer}>
+          {/* Logo & Branding */}
+          <View style={styles.topSection}>
             <View style={styles.logoInner}>
-              <Ionicons name="cube" size={40} color="#FFFFFF" />
+              <Ionicons name="cube" size={36} color="#FFFFFF" />
             </View>
+
+            <Text style={styles.brandName}>StockPlus</Text>
+            <Text style={styles.brandSuffix}>MOBILE</Text>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.subtitle}>
+              Controle de estoque para{'\n'}operações internas
+            </Text>
           </View>
 
-          <Text style={styles.brandName}>StockPlus</Text>
-          <Text style={styles.brandSuffix}>MOBILE</Text>
+          {/* Login Form */}
+          <View style={styles.formSection}>
+            {error !== '' && (
+              <View style={styles.errorBox}>
+                <Ionicons name="alert-circle" size={16} color={Colors.critical} />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
 
-          <View style={styles.divider} />
+            <View style={styles.inputWrapper}>
+              <Ionicons
+                name="person-outline"
+                size={20}
+                color="rgba(255,255,255,0.5)"
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Usuário"
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
+                editable={!loading}
+              />
+            </View>
 
-          <Text style={styles.subtitle}>
-            Controle de estoque para{'\n'}operações internas
-          </Text>
-        </View>
+            <View style={styles.inputWrapper}>
+              <Ionicons
+                name="lock-closed-outline"
+                size={20}
+                color="rgba(255,255,255,0.5)"
+                style={styles.inputIcon}
+              />
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="Senha"
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+                editable={!loading}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeButton}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color="rgba(255,255,255,0.5)"
+                />
+              </TouchableOpacity>
+            </View>
 
-        {/* Bottom Section - CTA */}
-        <View style={styles.bottomSection}>
-          <View style={styles.featureRow}>
-            <View style={styles.featureItem}>
-              <Ionicons name="alert-circle-outline" size={20} color="rgba(255,255,255,0.6)" />
-              <Text style={styles.featureText}>Alertas de estoque</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="calendar-outline" size={20} color="rgba(255,255,255,0.6)" />
-              <Text style={styles.featureText}>Vencimentos</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Ionicons name="stats-chart-outline" size={20} color="rgba(255,255,255,0.6)" />
-              <Text style={styles.featureText}>Visão geral</Text>
-            </View>
+            <TouchableOpacity
+              style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+              onPress={handleLogin}
+              activeOpacity={0.85}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color={Colors.primary} />
+              ) : (
+                <>
+                  <Text style={styles.loginButtonText}>Entrar</Text>
+                  <View style={styles.loginButtonIcon}>
+                    <Ionicons name="arrow-forward" size={18} color={Colors.primary} />
+                  </View>
+                </>
+              )}
+            </TouchableOpacity>
           </View>
 
-          <Text style={styles.description}>
-            Acompanhe produtos críticos, vencimentos e o panorama geral do estoque.
-          </Text>
-
-          <TouchableOpacity
-            style={styles.enterButton}
-            onPress={() => navigation.navigate('Main')}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.enterButtonText}>Entrar</Text>
-            <View style={styles.enterButtonIcon}>
-              <Ionicons name="arrow-forward" size={18} color={Colors.primary} />
+          {/* Footer */}
+          <View style={styles.footer}>
+            <View style={styles.featureRow}>
+              <View style={styles.featureItem}>
+                <Ionicons name="alert-circle-outline" size={18} color="rgba(255,255,255,0.5)" />
+                <Text style={styles.featureText}>Alertas</Text>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="calendar-outline" size={18} color="rgba(255,255,255,0.5)" />
+                <Text style={styles.featureText}>Vencimentos</Text>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="stats-chart-outline" size={18} color="rgba(255,255,255,0.5)" />
+                <Text style={styles.featureText}>Visão geral</Text>
+              </View>
             </View>
-          </TouchableOpacity>
-
-          <Text style={styles.disclaimer}>
-            Login será implementado futuramente
-          </Text>
-
-          <Text style={styles.version}>v1.0.0 — Protótipo</Text>
-        </View>
-      </View>
+            <Text style={styles.version}>v1.0.0</Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -89,8 +189,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.primary,
   },
-  content: {
+  flex: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     justifyContent: 'space-between',
     paddingHorizontal: 32,
   },
@@ -112,31 +215,30 @@ const styles = StyleSheet.create({
     borderRadius: 140,
     backgroundColor: 'rgba(255,255,255,0.02)',
   },
+
+  // Top branding
   topSection: {
     alignItems: 'center',
-    marginTop: 20,
-  },
-  logoContainer: {
-    marginBottom: 24,
   },
   logoInner: {
-    width: 84,
-    height: 84,
-    borderRadius: 22,
+    width: 72,
+    height: 72,
+    borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.18)',
+    marginBottom: 20,
   },
   brandName: {
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 0.5,
   },
   brandSuffix: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '400',
     color: 'rgba(255,255,255,0.55)',
     letterSpacing: 6,
@@ -146,51 +248,73 @@ const styles = StyleSheet.create({
     width: 36,
     height: 2,
     backgroundColor: 'rgba(255,255,255,0.25)',
-    marginVertical: 24,
+    marginVertical: 20,
     borderRadius: 1,
   },
   subtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.75)',
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.7)',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
   },
-  bottomSection: {
-    alignItems: 'center',
+
+  // Form
+  formSection: {
+    width: '100%',
+    gap: 14,
   },
-  featureRow: {
+  errorBox: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 24,
-    marginBottom: 24,
-  },
-  featureItem: {
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    backgroundColor: 'rgba(220,38,38,0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(220,38,38,0.3)',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
-  featureText: {
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.5)',
-    textAlign: 'center',
-  },
-  description: {
+  errorText: {
+    flex: 1,
     fontSize: 13,
-    color: 'rgba(255,255,255,0.45)',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 28,
-    paddingHorizontal: 12,
+    color: '#FCA5A5',
+    lineHeight: 18,
   },
-  enterButton: {
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 52,
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    color: '#FFFFFF',
+    height: '100%',
+  },
+  passwordInput: {
+    paddingRight: 36,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 14,
+  },
+  loginButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    height: 52,
     borderRadius: 14,
-    width: '100%',
-    gap: 12,
+    gap: 10,
+    marginTop: 4,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -203,12 +327,15 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  enterButtonText: {
+  loginButtonDisabled: {
+    opacity: 0.7,
+  },
+  loginButtonText: {
     fontSize: 17,
     fontWeight: '600',
     color: Colors.primary,
   },
-  enterButtonIcon: {
+  loginButtonIcon: {
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -216,15 +343,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  disclaimer: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.35)',
-    marginTop: 16,
-    textAlign: 'center',
+
+  // Footer
+  footer: {
+    alignItems: 'center',
+    gap: 16,
+  },
+  featureRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 28,
+  },
+  featureItem: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  featureText: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.4)',
   },
   version: {
     fontSize: 11,
     color: 'rgba(255,255,255,0.2)',
-    marginTop: 12,
   },
 });

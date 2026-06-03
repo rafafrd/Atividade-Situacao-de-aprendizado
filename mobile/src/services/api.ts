@@ -8,7 +8,7 @@
  *
  *   Ex.: http://192.168.0.10:3000
  */
-export const API_BASE_URL = 'http://192.168.0.10:3000';
+export const API_BASE_URL = '10.87.169.11';
 
 /**
  * Resposta padrão da API: os endpoints retornam { mensagem, recurso }.
@@ -36,4 +36,30 @@ export async function apiGet<T>(path: string): Promise<T> {
 
   const json = (await res.json()) as ApiEnvelope<T>;
   return (json.recurso ?? ([] as unknown as T)) as T;
+}
+
+/**
+ * Faz um POST na API e devolve o JSON de resposta.
+ * @param path  Caminho do endpoint (ex.: "/autenticacao/login").
+ * @param body  Corpo da requisição.
+ */
+export async function apiPost<T>(path: string, body: Record<string, unknown>): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new Error('Não foi possível conectar à API. Verifique o IP e se o servidor está rodando.');
+  }
+
+  const json = await res.json();
+
+  if (!res.ok) {
+    throw new Error(json.message ?? `Erro ${res.status}`);
+  }
+
+  return json as T;
 }
