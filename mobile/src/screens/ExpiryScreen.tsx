@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,13 @@ import {
   StyleSheet,
   StatusBar,
   Platform,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../constants/colors';
+import { getLotes, getProdutos } from '../services/stock';
 
 interface Product {
   id: string;
@@ -20,16 +23,6 @@ interface Product {
   daysLeft: number;
   qty: number;
 }
-
-const PRODUCTS: Product[] = [
-  { id: '1', name: 'Biscoito Recheado', lot: 'LT9921', expiry: '16/06/2026', daysLeft: 19, qty: 18 },
-  { id: '2', name: 'Cream Cheese 150g', lot: 'LT4421', expiry: '25/06/2026', daysLeft: 28, qty: 12 },
-  { id: '3', name: 'Iogurte Natural', lot: 'LT2031', expiry: '05/07/2026', daysLeft: 38, qty: 25 },
-  { id: '4', name: 'Requeijão Cremoso', lot: 'LT3305', expiry: '12/07/2026', daysLeft: 45, qty: 20 },
-  { id: '5', name: 'Leite Integral 1L', lot: 'LT8742', expiry: '29/07/2026', daysLeft: 62, qty: 40 },
-  { id: '6', name: 'Margarina 500g', lot: 'LT7712', expiry: '10/08/2026', daysLeft: 74, qty: 55 },
-  { id: '7', name: 'Molho de Tomate 340g', lot: 'LT5310', expiry: '20/08/2026', daysLeft: 84, qty: 30 },
-];
 
 type FilterKey = 'all' | '90' | '45';
 
@@ -74,13 +67,48 @@ export default function ExpiryScreen() {
   const insets = useSafeAreaInsets();
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
 
-  const filtered = useMemo(() => {
-    if (activeFilter === '45') return PRODUCTS.filter((p) => p.daysLeft <= 45);
-    if (activeFilter === '90') return PRODUCTS.filter((p) => p.daysLeft <= 90);
-    return PRODUCTS;
-  }, [activeFilter]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const critical45 = PRODUCTS.filter((p) => p.daysLeft <= 45).length;
+  const load = useCallback(async () => {
+    try {
+      setError(null);
+      const [lotes, produtos] = await Promise.all([getLotes(), getProdutos()]);
+      const nomePorProduto = new Map(produtos.map((p) => [p.id_produto, p.dc_produto]));
+      setProducts(
+        lotes.map((lote) => ({
+          id: String(lote.id_lote),
+          name: nomePorProduto.get(lote.id_produto) ?? `Produto #${lote.id_produto}`,
+          lot: `LT${lote.id_lote}`,
+          expiry: lote.dt_vencimento.replace(/-/g, '/'),
+          daysLeft: Number(lote.dias_para_vencer),
+          qty: Number(lote.quantidade_lote),
+        }))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar vencimentos.');
+    }
+  }, []);
+
+  useEffect(() => {
+    load().finally(() => setLoading(false));
+  }, [load]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
+
+  const filtered = useMemo(() => {
+    if (activeFilter === '45') return products.filter((p) => p.daysLeft <= 45);
+    if (activeFilter === '90') return products.filter((p) => p.daysLeft <= 90);
+    return products;
+  }, [products, activeFilter]);
+
+  const critical45 = products.filter((p) => p.daysLeft <= 45).length;
 
   const renderProduct = ({ item }: { item: Product }) => {
     const status = getStatus(item.daysLeft);
@@ -193,19 +221,33 @@ export default function ExpiryScreen() {
       </View>
 
       {/* Product List */}
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        renderItem={renderProduct}
-        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 90 }]}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Ionicons name="checkmark-circle-outline" size={48} color={Colors.success} />
-            <Text style={styles.emptyText}>Nenhum produto neste período</Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <View style={styles.emptyState}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.emptyText}>Carregando vencimentos...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          renderItem={renderProduct}
+          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 90 }]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} tintColor={Colors.primary} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Ionicons
+                name={error ? 'cloud-offline-outline' : 'checkmark-circle-outline'}
+                size={48}
+                color={error ? Colors.critical : Colors.success}
+              />
+              <Text style={styles.emptyText}>{error ?? 'Nenhum produto neste período'}</Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,13 @@ import {
   StyleSheet,
   StatusBar,
   Platform,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../constants/colors';
+import { getRelatorio } from '../services/stock';
 
 interface Product {
   id: string;
@@ -21,16 +24,6 @@ interface Product {
   qty: number;
   min: number;
 }
-
-const PRODUCTS: Product[] = [
-  { id: '1', name: 'Arroz Tipo 1', sku: 'ARZ001', category: 'Grãos', qty: 8, min: 10 },
-  { id: '2', name: 'Feijão Carioca', sku: 'FEJ014', category: 'Grãos', qty: 4, min: 8 },
-  { id: '3', name: 'Óleo de Soja 900ml', sku: 'OLS022', category: 'Óleos', qty: 12, min: 12 },
-  { id: '4', name: 'Macarrão Espaguete', sku: 'MAC101', category: 'Massas', qty: 3, min: 10 },
-  { id: '5', name: 'Açúcar Refinado 1kg', sku: 'ACR055', category: 'Mercearia', qty: 15, min: 20 },
-  { id: '6', name: 'Farinha de Trigo 1kg', sku: 'FRT033', category: 'Mercearia', qty: 2, min: 15 },
-  { id: '7', name: 'Sal Refinado 1kg', sku: 'SAL008', category: 'Temperos', qty: 20, min: 20 },
-];
 
 type FilterKey = 'all' | 'critical' | 'attention';
 
@@ -60,11 +53,45 @@ export default function MinStockScreen() {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
 
-  const criticalCount = PRODUCTS.filter((p) => p.qty < p.min).length;
-  const attentionCount = PRODUCTS.filter((p) => p.qty >= p.min).length;
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      setError(null);
+      const relatorio = await getRelatorio();
+      setProducts(
+        relatorio.map((item) => ({
+          id: String(item.id_produto),
+          name: item.dc_produto,
+          sku: `#${item.id_produto}`,
+          category: item.dc_categoria,
+          qty: Number(item.quantidade_atual),
+          min: Number(item.estoque_minimo),
+        }))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar estoque.');
+    }
+  }, []);
+
+  useEffect(() => {
+    load().finally(() => setLoading(false));
+  }, [load]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
+
+  const criticalCount = products.filter((p) => p.qty < p.min).length;
+  const attentionCount = products.filter((p) => p.qty >= p.min).length;
 
   const filtered = useMemo(() => {
-    return PRODUCTS.filter((p) => {
+    return products.filter((p) => {
       const matchSearch =
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.sku.toLowerCase().includes(search.toLowerCase());
@@ -75,7 +102,7 @@ export default function MinStockScreen() {
 
       return matchSearch && matchFilter;
     });
-  }, [search, activeFilter]);
+  }, [products, search, activeFilter]);
 
   const renderProduct = ({ item }: { item: Product }) => {
     const status = getStatus(item.qty, item.min);
@@ -194,7 +221,7 @@ export default function MinStockScreen() {
                 ? criticalCount
                 : filter.key === 'attention'
                 ? attentionCount
-                : PRODUCTS.length;
+                : products.length;
 
             return (
               <TouchableOpacity
@@ -218,19 +245,33 @@ export default function MinStockScreen() {
       </View>
 
       {/* Product List */}
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        renderItem={renderProduct}
-        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 90 }]}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={48} color={Colors.textTertiary} />
-            <Text style={styles.emptyText}>Nenhum produto encontrado</Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <View style={styles.emptyState}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.emptyText}>Carregando estoque...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          renderItem={renderProduct}
+          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 90 }]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} tintColor={Colors.primary} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Ionicons
+                name={error ? 'cloud-offline-outline' : 'search-outline'}
+                size={48}
+                color={error ? Colors.critical : Colors.textTertiary}
+              />
+              <Text style={styles.emptyText}>{error ?? 'Nenhum produto encontrado'}</Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 }

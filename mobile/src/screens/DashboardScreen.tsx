@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,13 @@ import {
   StyleSheet,
   StatusBar,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Colors } from '../constants/colors';
+import { getRelatorio, getLotes } from '../services/stock';
 
 interface SummaryCard {
   id: string;
@@ -41,51 +43,61 @@ interface Shortcut {
   tab: string;
 }
 
-const SUMMARY_CARDS: SummaryCard[] = [
-  {
-    id: '1',
-    title: 'Total de Produtos',
-    value: 128,
-    icon: 'cube',
-    color: Colors.primary,
-    bgColor: Colors.primaryBg,
-  },
-  {
-    id: '2',
-    title: 'Estoque Crítico',
-    value: 12,
-    icon: 'warning',
-    color: Colors.critical,
-    bgColor: Colors.criticalBg,
-  },
-  {
-    id: '3',
-    title: 'Vencimentos Próximos',
-    value: 8,
-    icon: 'time',
-    color: Colors.warning,
-    bgColor: Colors.warningBg,
-  },
-];
+interface Counts {
+  total: number;
+  critico: number;
+  vencimentos: number;
+}
 
-const ALERTS: AlertItem[] = [
-  {
-    id: '1',
-    text: '12 produtos abaixo do estoque mínimo',
-    icon: 'alert-circle',
-    color: Colors.critical,
-    bgColor: Colors.criticalBg,
-    tab: 'Estoque',
-  },
-  {
-    id: '2',
-    text: '5 produtos vencem em até 45 dias',
-    icon: 'warning',
-    color: Colors.warning,
-    bgColor: Colors.warningBg,
-    tab: 'Vencimentos',
-  },
-];
+function buildSummaryCards({ total, critico, vencimentos }: Counts): SummaryCard[] {
+  return [
+    {
+      id: '1',
+      title: 'Total de Produtos',
+      value: total,
+      icon: 'cube',
+      color: Colors.primary,
+      bgColor: Colors.primaryBg,
+    },
+    {
+      id: '2',
+      title: 'Estoque Crítico',
+      value: critico,
+      icon: 'warning',
+      color: Colors.critical,
+      bgColor: Colors.criticalBg,
+    },
+    {
+      id: '3',
+      title: 'Vencimentos Próximos',
+      value: vencimentos,
+      icon: 'time',
+      color: Colors.warning,
+      bgColor: Colors.warningBg,
+    },
+  ];
+}
+
+function buildAlerts({ critico, vencimentos }: Counts): AlertItem[] {
+  return [
+    {
+      id: '1',
+      text: `${critico} produto${critico !== 1 ? 's' : ''} abaixo do estoque mínimo`,
+      icon: 'alert-circle',
+      color: Colors.critical,
+      bgColor: Colors.criticalBg,
+      tab: 'Estoque',
+    },
+    {
+      id: '2',
+      text: `${vencimentos} produto${vencimentos !== 1 ? 's' : ''} vencem em até 45 dias`,
+      icon: 'warning',
+      color: Colors.warning,
+      bgColor: Colors.warningBg,
+      tab: 'Vencimentos',
+    },
+  ];
+}
 
 const SHORTCUTS: Shortcut[] = [
   {
@@ -111,6 +123,39 @@ const SHORTCUTS: Shortcut[] = [
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
+
+  const [counts, setCounts] = useState<Counts>({ total: 0, critico: 0, vencimentos: 0 });
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      setError(null);
+      const [relatorio, lotes] = await Promise.all([getRelatorio(), getLotes()]);
+      setCounts({
+        total: relatorio.length,
+        critico: relatorio.filter(
+          (item) => item.status_estoque === 'SEM_ESTOQUE' || item.status_estoque === 'ESTOQUE_BAIXO'
+        ).length,
+        vencimentos: lotes.filter((lote) => Number(lote.dias_para_vencer) <= 45).length,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar dados.');
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
+
+  const summaryCards = buildSummaryCards(counts);
+  const alerts = buildAlerts(counts);
 
   const now = new Date();
   const hours = now.getHours();
@@ -153,10 +198,20 @@ export default function DashboardScreen() {
           { paddingBottom: insets.bottom + 100 },
         ]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary]} tintColor={Colors.primary} />
+        }
       >
+        {error && (
+          <View style={styles.errorBanner}>
+            <Ionicons name="cloud-offline-outline" size={16} color={Colors.critical} />
+            <Text style={styles.errorBannerText}>{error}</Text>
+          </View>
+        )}
+
         {/* Summary Cards */}
         <View style={styles.cardsGrid}>
-          {SUMMARY_CARDS.map((card) => (
+          {summaryCards.map((card) => (
             <View key={card.id} style={styles.summaryCard}>
               <View style={styles.summaryCardTop}>
                 <View style={[styles.summaryIconBox, { backgroundColor: card.bgColor }]}>
@@ -183,7 +238,7 @@ export default function DashboardScreen() {
           </View>
 
           <View style={styles.alertsList}>
-            {ALERTS.map((alert) => (
+            {alerts.map((alert) => (
               <TouchableOpacity
                 key={alert.id}
                 style={styles.alertCard}
@@ -310,6 +365,22 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 20,
     paddingHorizontal: 16,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Colors.criticalBg,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  errorBannerText: {
+    flex: 1,
+    fontSize: 13,
+    color: Colors.critical,
+    fontWeight: '500',
   },
 
   // Summary Cards Grid
