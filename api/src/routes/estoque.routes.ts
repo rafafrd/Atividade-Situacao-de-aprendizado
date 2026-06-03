@@ -7,9 +7,9 @@ const estoqueRouter = Router();
 const authMiddleware = new AuthMiddleware();
 const estoqueController = new EstoqueController();
 
-estoqueRouter.get('/', authMiddleware.authenticate, estoqueController.listarTodos);
+estoqueRouter.get('/', authMiddleware.authenticate, authMiddleware.authorize(Role.USER, Role.MANAGER, Role.ADMIN), estoqueController.listarTodos);
 estoqueRouter.get('/report', authMiddleware.authenticate, authMiddleware.authorize(Role.MANAGER, Role.ADMIN, Role.USER), estoqueController.relatorioEstoque);
-estoqueRouter.get('/:id', authMiddleware.authenticate, estoqueController.buscarPorId);
+estoqueRouter.get('/:id', authMiddleware.authenticate, authMiddleware.authorize(Role.USER, Role.MANAGER, Role.ADMIN), estoqueController.buscarPorId);
 estoqueRouter.post('/', authMiddleware.authenticate, authMiddleware.authorize(Role.MANAGER, Role.ADMIN), estoqueController.criarEstoque);
 estoqueRouter.put('/:id', authMiddleware.authenticate, authMiddleware.authorize(Role.MANAGER, Role.ADMIN), estoqueController.atualizarEstoque);
 estoqueRouter.delete('/:id', authMiddleware.authenticate, authMiddleware.authorize(Role.MANAGER, Role.ADMIN), estoqueController.deletarEstoque);
