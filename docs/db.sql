@@ -2,6 +2,15 @@ CREATE DATABASE stockplus_db;
 
 USE StockPlus_db;
 
+CREATE TABLE IF NOT EXISTS login (
+    id_login      INT PRIMARY KEY AUTO_INCREMENT,
+    username      VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role          VARCHAR(50)  NOT NULL DEFAULT 'user',
+    is_active     TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS Categorias (
     id_categoria INT PRIMARY KEY AUTO_INCREMENT,
     dc_categoria TEXT

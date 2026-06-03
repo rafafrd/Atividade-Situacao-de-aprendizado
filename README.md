@@ -208,6 +208,109 @@ Ideal para ambientes onde o código já foi validado previamente.
 
 ---
 
+## Aplicativo Mobile
+
+Foi adicionado um aplicativo mobile em **`mobile/`**, construído com **Expo + React Native (TypeScript)**, que **consome esta API**. Ele é apenas de leitura e oferece três telas: **Início** (visão geral), **Estoque Mínimo** (produtos críticos) e **Vencimentos** (lotes próximos do vencimento).
+
+```mermaid
+flowchart LR
+    subgraph Celular ["📱 App Mobile (Expo)"]
+        T["Telas: Início · Estoque · Vencimentos"]
+    end
+    subgraph PC ["💻 Seu PC"]
+        API["API Express\nlocalhost:8000"]
+        DB[("MySQL")]
+    end
+    T -->|"GET via IP da rede\nhttp://192.168.x.x:8000"| API
+    API --> DB
+```
+
+### Subindo tudo de uma vez (a partir da raiz)
+
+Foi adicionado um **`package.json` na raiz** que orquestra a API e o app juntos. Na **primeira vez**, instale as dependências dos três pacotes:
+
+```bash
+npm run install:all   # instala deps da raiz + api + mobile
+```
+
+Depois, suba os dois ao mesmo tempo:
+
+```bash
+npm start             # imprime os links de acesso e sobe API + app
+```
+
+O `npm start` primeiro imprime os endereços da API (para o Insomnia e para o mobile) já com o **IP da sua máquina** detectado automaticamente e, em seguida, sobe a API e o Expo lado a lado:
+
+```
+==================================================================
+  StockPlus — endereços da API
+==================================================================
+  Insomnia / navegador (no PC):   http://localhost:8000
+  App mobile (celular/emulador):  http://192.168.x.x:8000
+
+  -> Configure em mobile/src/services/api.ts:
+       export const API_BASE_URL = 'http://192.168.x.x:8000';
+==================================================================
+```
+
+| Script (na raiz) | O que faz |
+|---|---|
+| `npm run install:all` | Instala dependências da raiz, da API e do mobile |
+| `npm start` | Imprime os links e sobe **API + app mobile** juntos (`concurrently`) |
+| `npm run dev` | **Build** da API → **Lint** da API → **Typecheck** do mobile |
+| `npm run info` | Apenas imprime os links de acesso (sem subir nada) |
+
+> A porta vem do `SERVER_PORT` do `api/.env` (padrão `8000`) e é lida automaticamente — os links acima sempre refletem a sua configuração.
+
+### Rodando só o mobile (opcional)
+
+```bash
+cd mobile
+npm install
+npm start        # abre o Metro/Expo com o QR Code
+```
+
+Depois, escaneie o QR Code com o app **Expo Go** (Android) ou a câmera (iOS). Atalhos: `npm run android` / `npm run ios` para abrir direto em um emulador.
+
+> Pré-requisitos do mobile: Node.js LTS, a **API rodando** com o banco configurado, o app **Expo Go** (ou um emulador) e o celular/PC na **mesma rede Wi-Fi**.
+
+### ⚠️ Importante: `localhost` no celular **não** aponta para o seu PC
+
+Quando a API roda no seu computador, ela fica em `http://localhost:8000`. Mas **`localhost` (e `127.0.0.1`) sempre se refere ao próprio aparelho onde o código está rodando**. No celular, `localhost` é o *próprio celular* — não o seu PC. Por isso o app **não** consegue usar `localhost` para falar com a API.
+
+A solução é apontar o app para o **IP da sua máquina na rede local** (ex.: `http://192.168.0.10:8000`) — exatamente o endereço que o `npm start` / `npm run info` imprime. Para descobrir manualmente:
+
+- **Windows:** rode `ipconfig` e use o **Endereço IPv4** do adaptador Wi-Fi (algo como `192.168.x.x`)
+- **Linux/macOS:** `ip addr` ou `ifconfig`
+
+| Onde o app roda | URL que alcança a API |
+|---|---|
+| Celular físico (Expo Go) | `http://SEU_IP_LOCAL:8000` (ex.: `http://192.168.0.10:8000`) |
+| Emulador Android | `http://SEU_IP_LOCAL:8000` (ou `http://10.0.2.2:8000`) |
+| Simulador iOS (mesmo Mac) | `http://localhost:8000` funciona |
+| Expo Web (mesmo PC) | `http://localhost:8000` funciona |
+
+### Onde configurar
+
+Edite a constante `API_BASE_URL` em **`mobile/src/services/api.ts`** com o IP e a porta da API (use o valor que o `npm run info` imprime):
+
+```ts
+// mobile/src/services/api.ts
+export const API_BASE_URL = 'http://192.168.0.10:8000'; // ← troque pelo IP da SUA máquina + porta da API
+```
+
+> Garanta que a API esteja acessível na rede — em alguns casos o **firewall do Windows** pode bloquear a porta; libere-a se o app não conseguir conectar.
+
+### Telas e endpoints consumidos
+
+| Tela | Endpoint(s) da API |
+|---|---|
+| Início | `GET /estoque/report` + `GET /lote-estoque` (contadores) |
+| Estoque Mínimo | `GET /estoque/report` (produto, categoria, qtd, mínimo) |
+| Vencimentos | `GET /lote-estoque` + `GET /produtos` (nomes dos produtos) |
+
+---
+
 ## Endpoints
 
 ### Categorias `/categorias`
