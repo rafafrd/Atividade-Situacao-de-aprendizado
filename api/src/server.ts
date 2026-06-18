@@ -21,21 +21,21 @@ app.get('/admin/reset-db', async (req, res) => {
         });
         await conn.query(`DROP DATABASE IF EXISTS \`${EnvVar.DB_DATABASE}\``);
         await conn.end();
-        res.json({ ok: true, mensagem: "Banco dropado. Reinicie o serviço." });
+        res.json({ ok: true, mensagem: "Banco dropado. Faça redeploy agora." });
     } catch (error) {
         res.status(500).json({ ok: false, error: String(error) });
     }
 });
 
 app.use('/', router);
-
 app.use('/produtos', express.static(path.resolve('uploads/Images')));
 
-initializeDatabase().then(() => {
-    app.listen(EnvVar.SERVER_PORT, () => {
-        console.log(`Servidor rodando em http://localhost:${EnvVar.SERVER_PORT}`);
+// Sobe o servidor primeiro, depois inicializa o banco
+app.listen(EnvVar.SERVER_PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${EnvVar.SERVER_PORT}`);
+
+    initializeDatabase().catch((error) => {
+        console.error('Falha ao inicializar o banco de dados:', error);
+        // Não encerra o processo — /admin/reset-db ainda fica acessível
     });
-}).catch((error) => {
-    console.error('Falha ao inicializar o banco de dados:', error);
-    process.exit(1);
 });
