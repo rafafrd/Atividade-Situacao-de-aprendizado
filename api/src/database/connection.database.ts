@@ -66,21 +66,21 @@ export async function initializeDatabase(): Promise<void> {
         `);
 
         await tempConnection.query(`
-            CREATE TABLE IF NOT EXISTS Categorias (
+            CREATE TABLE IF NOT EXISTS categorias (
                 id_categoria INT PRIMARY KEY AUTO_INCREMENT,
                 dc_categoria TEXT
             );
         `);
 
         await tempConnection.query(`
-            CREATE TABLE IF NOT EXISTS Fornecedores (
+            CREATE TABLE IF NOT EXISTS fornecedores (
                 id_fornecedor INT PRIMARY KEY AUTO_INCREMENT,
                 dc_fornecedor TEXT
             );
         `);
 
         await tempConnection.query(`
-            CREATE TABLE IF NOT EXISTS Produtos (
+            CREATE TABLE IF NOT EXISTS produtos (
                 id_produto     INT PRIMARY KEY AUTO_INCREMENT,
                 dc_produto     TEXT,
                 vinculo_imagem VARCHAR(100),
@@ -88,57 +88,57 @@ export async function initializeDatabase(): Promise<void> {
                 estoque_minimo INT NOT NULL,
                 id_categoria   INT NOT NULL,
                 id_fornecedor  INT NOT NULL,
-                FOREIGN KEY (id_categoria)  REFERENCES Categorias  (id_categoria),
-                FOREIGN KEY (id_fornecedor) REFERENCES Fornecedores (id_fornecedor)
+                FOREIGN KEY (id_categoria)  REFERENCES categorias  (id_categoria),
+                FOREIGN KEY (id_fornecedor) REFERENCES fornecedores (id_fornecedor)
             );
         `);
 
         await tempConnection.query(`
-            CREATE TABLE IF NOT EXISTS Estoque (
+            CREATE TABLE IF NOT EXISTS estoque (
                 id_estoque            INT PRIMARY KEY AUTO_INCREMENT,
                 id_produto            INT NOT NULL,
                 quantidade_atual      INT NOT NULL,
                 dt_ultima_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (id_produto) REFERENCES Produtos (id_produto) ON DELETE CASCADE
+                FOREIGN KEY (id_produto) REFERENCES produtos (id_produto) ON DELETE CASCADE
             );
         `);
 
         await tempConnection.query(`
-            CREATE TABLE IF NOT EXISTS Lote_Estoque (
+            CREATE TABLE IF NOT EXISTS lote_estoque (
                 id_lote         INT PRIMARY KEY AUTO_INCREMENT,
                 id_produto      INT NOT NULL,
                 dt_vencimento   DATE,
                 quantidade_lote INT,
                 dt_entrada      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (id_produto) REFERENCES Produtos (id_produto) ON DELETE CASCADE
+                FOREIGN KEY (id_produto) REFERENCES produtos (id_produto) ON DELETE CASCADE
             );
         `);
 
         await tempConnection.query(`
-            CREATE TABLE IF NOT EXISTS Movimentacao (
+            CREATE TABLE IF NOT EXISTS movimentacao (
                 id_movimentacao INT PRIMARY KEY AUTO_INCREMENT,
                 tipo_movimento  ENUM('ENTRADA', 'SAIDA') NOT NULL,
                 quantidade      INT NOT NULL,
                 dt_movimentacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 id_lote         INT,
                 id_produto      INT,
-                FOREIGN KEY (id_lote)    REFERENCES Lote_Estoque (id_lote)    ON DELETE CASCADE,
-                FOREIGN KEY (id_produto) REFERENCES Produtos      (id_produto) ON DELETE CASCADE
+                FOREIGN KEY (id_lote)    REFERENCES lote_estoque (id_lote)    ON DELETE CASCADE,
+                FOREIGN KEY (id_produto) REFERENCES produtos      (id_produto) ON DELETE CASCADE
             );
         `);
 
         await tempConnection.query(`
             CREATE OR REPLACE TRIGGER trg_movimentacao_atualiza_estoque
-            AFTER INSERT ON Movimentacao
+            AFTER INSERT ON movimentacao
             FOR EACH ROW
             BEGIN
                 IF NEW.tipo_movimento = 'ENTRADA' THEN
-                    UPDATE Estoque
+                    UPDATE estoque
                     SET quantidade_atual      = quantidade_atual + NEW.quantidade,
                         dt_ultima_atualizacao = CURRENT_TIMESTAMP
                     WHERE id_produto = NEW.id_produto;
                 ELSEIF NEW.tipo_movimento = 'SAIDA' THEN
-                    UPDATE Estoque
+                    UPDATE estoque
                     SET quantidade_atual      = quantidade_atual - NEW.quantidade,
                         dt_ultima_atualizacao = CURRENT_TIMESTAMP
                     WHERE id_produto = NEW.id_produto;
@@ -165,11 +165,11 @@ export async function initializeDatabase(): Promise<void> {
                     WHEN COALESCE(e.quantidade_atual, 0) <= p.estoque_minimo THEN 'ESTOQUE_BAIXO'
                     ELSE 'NORMAL'
                 END AS status_estoque
-            FROM Produtos p
-            INNER JOIN Categorias   c ON c.id_categoria  = p.id_categoria
-            INNER JOIN Fornecedores f ON f.id_fornecedor = p.id_fornecedor
-            LEFT  JOIN Estoque      e ON e.id_produto    = p.id_produto
-            LEFT  JOIN Lote_Estoque l ON l.id_produto    = p.id_produto
+            FROM produtos p
+            INNER JOIN categorias   c ON c.id_categoria  = p.id_categoria
+            INNER JOIN fornecedores f ON f.id_fornecedor = p.id_fornecedor
+            LEFT  JOIN estoque      e ON e.id_produto    = p.id_produto
+            LEFT  JOIN lote_estoque l ON l.id_produto    = p.id_produto
             GROUP BY
                 p.id_produto, p.dc_produto, p.preco, p.estoque_minimo,
                 c.dc_categoria, f.dc_fornecedor, e.quantidade_atual, e.dt_ultima_atualizacao
@@ -191,8 +191,8 @@ export async function initializeDatabase(): Promise<void> {
                     WHEN e.quantidade_atual <= p.estoque_minimo THEN 'ESTOQUE BAIXO'
                     ELSE 'OK'
                 END AS status_estoque
-            FROM Estoque e
-            INNER JOIN Produtos p ON p.id_produto = e.id_produto
+            FROM estoque e
+            INNER JOIN produtos p ON p.id_produto = e.id_produto
             ORDER BY
                 CASE WHEN e.quantidade_atual <= p.estoque_minimo THEN 0 ELSE 1 END,
                 e.quantidade_atual ASC;
@@ -207,8 +207,8 @@ export async function initializeDatabase(): Promise<void> {
                     WHEN e.quantidade_atual <= p.estoque_minimo THEN 'ESTOQUE BAIXO'
                     ELSE 'OK'
                 END AS status_estoque
-            FROM Estoque e
-            INNER JOIN Produtos p ON p.id_produto = e.id_produto;
+            FROM estoque e
+            INNER JOIN produtos p ON p.id_produto = e.id_produto;
         `);
 
         await tempConnection.end();
