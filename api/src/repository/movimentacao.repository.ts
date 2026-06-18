@@ -1,8 +1,8 @@
 import { db } from '../database/connection.database';
-import { movimentacao } from '../models/movimentacao.model';
+import { Movimentacao } from '../models/movimentacao.model';
 import { ResultSetHeader } from 'mysql2';
 
-export class movimentacaoRepository {
+export class MovimentacaoRepository {
 
     async selectTodos(): Promise<ResultSetHeader> {
         const sql = 'SELECT * FROM movimentacao';
@@ -17,14 +17,14 @@ export class movimentacaoRepository {
         return rows;
     }
 
-    async adicionarmovimentacao(dados: movimentacao): Promise<ResultSetHeader> {
+    async adicionarmovimentacao(dados: Movimentacao): Promise<ResultSetHeader> {
         const sql = 'INSERT INTO movimentacao (tipo_movimento, quantidade, id_lote, id_produto) VALUES (?, ?, ?, ?)';
         const values = [dados.TipoMovimento, dados.Quantidade, dados.IdLote, dados.IdProduto];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows;
     }
 
-    async editarmovimentacao(id: number, dados: movimentacao): Promise<ResultSetHeader> {
+    async editarmovimentacao(id: number, dados: Movimentacao): Promise<ResultSetHeader> {
         const sql = 'UPDATE movimentacao SET tipo_movimento = ?, quantidade = ?, id_lote = ?, id_produto = ? WHERE id_movimentacao = ?';
         const values = [dados.TipoMovimento, dados.Quantidade, dados.IdLote, dados.IdProduto, id];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
