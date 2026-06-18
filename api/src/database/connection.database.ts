@@ -88,8 +88,8 @@ export async function initializeDatabase(): Promise<void> {
                 estoque_minimo INT NOT NULL,
                 id_categoria   INT NOT NULL,
                 id_fornecedor  INT NOT NULL,
-                FOREIGN KEY (id_categoria)  REFERENCES categorias  (id_categoria),
-                FOREIGN KEY (id_fornecedor) REFERENCES fornecedores (id_fornecedor)
+                CONSTRAINT fk_prod_cat  FOREIGN KEY (id_categoria)  REFERENCES categorias  (id_categoria),
+                CONSTRAINT fk_prod_forn FOREIGN KEY (id_fornecedor) REFERENCES fornecedores (id_fornecedor)
             );
         `);
 
@@ -99,7 +99,7 @@ export async function initializeDatabase(): Promise<void> {
                 id_produto            INT NOT NULL,
                 quantidade_atual      INT NOT NULL,
                 dt_ultima_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (id_produto) REFERENCES produtos (id_produto) ON DELETE CASCADE
+                CONSTRAINT fk_est_prod FOREIGN KEY (id_produto) REFERENCES produtos (id_produto) ON DELETE CASCADE
             );
         `);
 
@@ -110,7 +110,7 @@ export async function initializeDatabase(): Promise<void> {
                 dt_vencimento   DATE,
                 quantidade_lote INT,
                 dt_entrada      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (id_produto) REFERENCES produtos (id_produto) ON DELETE CASCADE
+                CONSTRAINT fk_lote_prod FOREIGN KEY (id_produto) REFERENCES produtos (id_produto) ON DELETE CASCADE
             );
         `);
 
@@ -122,8 +122,8 @@ export async function initializeDatabase(): Promise<void> {
                 dt_movimentacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 id_lote         INT,
                 id_produto      INT,
-                FOREIGN KEY (id_lote)    REFERENCES lote_estoque (id_lote)    ON DELETE CASCADE,
-                FOREIGN KEY (id_produto) REFERENCES produtos      (id_produto) ON DELETE CASCADE
+                CONSTRAINT fk_mov_lote FOREIGN KEY (id_lote)    REFERENCES lote_estoque (id_lote)    ON DELETE CASCADE,
+                CONSTRAINT fk_mov_prod FOREIGN KEY (id_produto) REFERENCES produtos      (id_produto) ON DELETE CASCADE
             );
         `);
 
