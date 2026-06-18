@@ -36,7 +36,7 @@ export class EstoqueRepository {
      * @returns Promise com o resultado da operação de inserção.
      */
     async adicionarEstoque(dados: Estoque): Promise<ResultSetHeader> {
-        const sql = 'INSERT INTO Estoque (id_produto, quantidade_atual) VALUES (?, ?)';
+        const sql = 'INSERT INTO estoque (id_produto, quantidade_atual) VALUES (?, ?)';
         const values = [dados.IdProduto, dados.QuantidadeAtual];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows;
@@ -49,7 +49,7 @@ export class EstoqueRepository {
      * @returns Promise com o resultado da operação de atualização.
      */
     async editarEstoque(id: number, dados: Estoque): Promise<ResultSetHeader> {
-        const sql = 'UPDATE Estoque SET quantidade_atual = ?, dt_ultima_atualizacao = CURRENT_TIMESTAMP WHERE id_estoque = ?';
+        const sql = 'UPDATE estoque SET quantidade_atual = ?, dt_ultima_atualizacao = CURRENT_TIMESTAMP WHERE id_estoque = ?';
         const values = [dados.QuantidadeAtual, id];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows;
@@ -61,7 +61,7 @@ export class EstoqueRepository {
      * @returns Promise com o resultado da operação de exclusão.
      */
     async deletarEstoque(id: number): Promise<ResultSetHeader> {
-        const sql = 'DELETE FROM Estoque WHERE id_estoque = ?';
+        const sql = 'DELETE FROM estoque WHERE id_estoque = ?';
         const values = [id];
         const [rows] = await db.execute<ResultSetHeader>(sql, values);
         return rows;
