@@ -7,9 +7,8 @@ import { initializeDatabase } from "./database/connection.database";
 const app = express();
 
 app.use(express.json());
-app.use('/', router);
-
 app.use('/produtos', express.static(path.resolve('uploads/Images')));
+app.use('/', router);
 
 initializeDatabase().then(() => {
     app.listen(EnvVar.SERVER_PORT, () => {
