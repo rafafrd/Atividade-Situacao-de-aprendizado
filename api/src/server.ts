@@ -7,7 +7,7 @@ import { initializeDatabase } from "./database/connection.database";
 const app = express();
 
 app.use(express.json());
-app.use('/produtos', express.static(path.resolve('uploads/Images')));
+app.use('/imagens', express.static(path.resolve('uploads/Images')));
 app.use('/', router);
 
 initializeDatabase().then(() => {
